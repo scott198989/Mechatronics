@@ -29,7 +29,7 @@ const InputFields = ({
         <div>
           <input
             type="text"
-            onChange={handleResistance1Change}
+            onChange={handleResistanceChange} // Corrected to match the prop passed
             placeholder="Resistance 1 (e.g., 100)"
           />
           <input
@@ -37,9 +37,9 @@ const InputFields = ({
             onChange={handleResistance2Change}
             placeholder="Resistance 2 (e.g., 200)"
           />
-          {/* Add more input fields for additional resistances if needed */}
         </div>
       )}
+
       {selectedFormula === 'ohm' && (
         <div>
           <input

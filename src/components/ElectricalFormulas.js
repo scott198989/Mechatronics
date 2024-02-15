@@ -96,33 +96,19 @@ const handleResistanceChange = (e) => {
     return `Total Resistance (Ω) = ${formattedResistance}`
   }
 const calculateParallelCircuit = () => {
-  // Parse the input resistance values as floats
-  const r1 = parseFloat(resistance)
-  const r2 = parseFloat(resistance2)
+  const r1 = parseFloat(resistance);
+  const r2 = parseFloat(resistance2);
 
-  console.log('r1:', r1)
-  console.log('r2:', r2)
-
-  // Check if any input resistance is invalid
   if (isNaN(r1) || isNaN(r2)) {
-    return 'Invalid input'
+    return 'Invalid input';
   }
 
-  // Calculate total resistance for parallel circuit
-  const totalResistance = 1 / (1 / r1 + 1 / r2)
+  const totalResistance = 1 / ((1 / r1) + (1 / r2));
+  const formattedResistance = formatEngineeringNotation(totalResistance);
 
-  // Calculate the total current using the formula (since voltage is not considered)
-  const totalCurrent = 1 / totalResistance
-
-  console.log('totalResistance:', totalResistance)
-  console.log('totalCurrent:', totalCurrent)
-
-  // Format the result using engineering notation
-  const formattedCurrent = formatEngineeringNotation(totalCurrent)
-
-  // Return the result as a formatted string
-  return `Total Current (I) = ${formattedCurrent} A`
+  return `Total Resistance (Ω) = ${formattedResistance}`;
 }
+
 
 
 
