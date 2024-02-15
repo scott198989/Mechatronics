@@ -1,104 +1,141 @@
-import React, { useState } from 'react'
+import React, { useState } from 'react';
 
 const ElectricalUnitConverter = () => {
-  const [inputValue, setInputValue] = useState('')
-  const [inputExponent, setInputExponent] = useState('0') // Default to no exponent
-  const [inputUnit, setInputUnit] = useState('')
-  const [outputUnit, setOutputUnit] = useState('')
-  const [additionalParam, setAdditionalParam] = useState('')
+  const [value, setValue] = useState('')
+  const [exponent, setExponent] = useState('')
+  const [currentUnit, setCurrentUnit] = useState('')
+  const [targetUnit, setTargetUnit] = useState('')
+  const [additionalParameter, setAdditionalParameter] = useState('')
   const [result, setResult] = useState('')
 
-  const handleInputChange = (e) => setInputValue(e.target.value)
-  const handleExponentChange = (e) => setInputExponent(e.target.value)
-  const handleInputUnitChange = (e) => setInputUnit(e.target.value)
-  const handleOutputUnitChange = (e) => setOutputUnit(e.target.value)
-  const handleAdditionalParamChange = (e) => setAdditionalParam(e.target.value)
+  const handleValueChange = (e) => setValue(e.target.value)
+  const handleExponentChange = (e) => setExponent(e.target.value)
+  const handleCurrentUnitChange = (e) => setCurrentUnit(e.target.value)
+  const handleTargetUnitChange = (e) => setTargetUnit(e.target.value)
+  const handleAdditionalParameterChange = (e) =>
+    setAdditionalParameter(e.target.value)
 
-  const convertUnits = () => {
-    // Convert inputValue according to the exponent to get the actual value
-    const actualValue =
-      parseFloat(inputValue) * Math.pow(10, parseInt(inputExponent, 10))
-    let conversionResult = null
+  // Define this function at the top level of your component
+  const isAdditionalParameterNeeded = () => {
+    return (
+      (currentUnit === 'A' && targetUnit === 'W') ||
+      (currentUnit === 'V' && (targetUnit === 'W' || targetUnit === 'A')) ||
+      (currentUnit === 'W' && (targetUnit === 'A' || targetUnit === 'V'))
+    )
+  }
 
-    if (isNaN(actualValue) || isNaN(parseFloat(additionalParam))) {
-      setResult('Invalid input')
+  const convertValue = () => {
+    if (value.trim() === '' || exponent.trim() === '') {
+      setResult('Please enter both a value and an exponent.')
       return
     }
 
-    // Conversion logic
-    if (inputUnit === 'A' && outputUnit === 'W') {
-      // Convert Amps to Watts (requires additional parameter: Voltage)
-      const voltage = parseFloat(additionalParam)
-      conversionResult = actualValue * voltage
-    } else if (inputUnit === 'V' && outputUnit === 'W') {
-      // Convert Volts to Watts (requires additional parameter: Current)
-      const current = parseFloat(additionalParam)
-      conversionResult = actualValue * current
-    } else if (inputUnit === 'W' && outputUnit === 'A') {
-      // Convert Watts to Amps (requires additional parameter: Voltage)
-      const voltage = parseFloat(additionalParam)
-      conversionResult = actualValue / voltage
-    } else if (inputUnit === 'W' && outputUnit === 'V') {
-      // Convert Watts to Volts (requires additional parameter: Current)
-      const current = parseFloat(additionalParam)
-      conversionResult = actualValue / current
+    const numericValue =
+      parseFloat(value) * Math.pow(10, parseInt(exponent, 10))
+    if (isNaN(numericValue)) {
+      setResult('Invalid number input.')
+      return
     }
-    // Add more conversion logic here as needed
 
-    if (conversionResult !== null) {
-      setResult(`${conversionResult.toFixed(2)} ${outputUnit}`)
+    let convertedValue = null
+
+    switch (currentUnit) {
+      case 'A':
+        if (targetUnit === 'W' && additionalParameter) {
+          const voltage = parseFloat(additionalParameter)
+          if (!isNaN(voltage) && voltage !== 0) {
+            convertedValue = numericValue * voltage
+          }
+        }
+        break
+      case 'V':
+        if (targetUnit === 'W' && additionalParameter) {
+          const current = parseFloat(additionalParameter)
+          if (!isNaN(current) && current !== 0) {
+            convertedValue = numericValue * current
+          }
+        } else if (targetUnit === 'A' && additionalParameter) {
+          const resistance = parseFloat(additionalParameter)
+          if (!isNaN(resistance) && resistance !== 0) {
+            convertedValue = numericValue / resistance
+          }
+        }
+        break
+      case 'W':
+        if (targetUnit === 'A' && additionalParameter) {
+          const voltage = parseFloat(additionalParameter)
+          if (!isNaN(voltage) && voltage !== 0) {
+            convertedValue = numericValue / voltage
+          }
+        } else if (targetUnit === 'V' && additionalParameter) {
+          const current = parseFloat(additionalParameter)
+          if (!isNaN(current) && current !== 0) {
+            convertedValue = numericValue / current
+          }
+        }
+        break
+      // Add additional cases as needed
+    }
+
+    if (convertedValue !== null) {
+      const prefixes = ['', 'k', 'M', 'G', 'T', 'P', 'E']
+      let unitExponent = 0
+      while (convertedValue >= 1000) {
+        convertedValue /= 1000
+        unitExponent++
+      }
+      while (convertedValue < 1 && convertedValue > 0) {
+        convertedValue *= 1000
+        unitExponent--
+      }
+      const prefix = prefixes[unitExponent + 3] || ''
+      setResult(`${convertedValue.toFixed(2)} ${prefix}${targetUnit}`)
     } else {
-      setResult('Conversion not supported or invalid input')
+      setResult('Conversion not possible with the given units or input.')
     }
   }
 
   return (
-    <div>
-      <h2>Electrical Unit Converter</h2>
-      <label>
-        Value:
-        <input type="number" value={inputValue} onChange={handleInputChange} />
-      </label>
-      <label>
-        Exponent (e.g., -3 for milli, 3 for kilo):
-        <input
-          type="number"
-          value={inputExponent}
-          onChange={handleExponentChange}
-        />
-      </label>
-      <label>
-        From Unit:
-        <select value={inputUnit} onChange={handleInputUnitChange}>
-          <option value="">Select Unit</option>
-          <option value="A">Amps (A)</option>
-          <option value="V">Volts (V)</option>
-          <option value="W">Watts (W)</option>
-          {/* Add more units as needed */}
-        </select>
-      </label>
-      <label>
-        To Unit:
-        <select value={outputUnit} onChange={handleOutputUnitChange}>
-          <option value="">Select Unit</option>
-          <option value="A">Amps (A)</option>
-          <option value="V">Volts (V)</option>
-          <option value="W">Watts (W)</option>
-          {/* Add more units as needed */}
-        </select>
-      </label>
-      <label>
-        Additional Parameter (e.g., Voltage for converting Amps to Watts):
-        <input
-          type="number"
-          value={additionalParam}
-          onChange={handleAdditionalParamChange}
-        />
-      </label>
-      <button onClick={convertUnits}>Convert</button>
-      <div>Result: {result}</div>
-    </div>
-  )
-}
-
-export default ElectricalUnitConverter
+  <div>
+    <h2>Electrical Unit Converter</h2>
+    <input
+      type="number"
+      value={value}
+      onChange={handleValueChange}
+      placeholder="Value"
+    />
+    <input
+      type="number"
+      value={exponent}
+      onChange={handleExponentChange}
+      placeholder="Exponent (e.g., -3 for milli, 3 for kilo)"
+    />
+    <select value={currentUnit} onChange={handleCurrentUnitChange}>
+      <option value="">From Unit</option>
+      <option value="A">Amps (A)</option>
+      <option value="V">Volts (V)</option>
+      <option value="W">Watts (W)</option>
+      <option value="Ω">Ohms (Ω)</option>
+      {/* Add more unit options as needed */}
+    </select>
+    <select value={targetUnit} onChange={handleTargetUnitChange}>
+      <option value="">To Unit</option>
+      <option value="A">Amps (A)</option>
+      <option value="V">Volts (V)</option>
+      <option value="W">Watts (W)</option>
+      <option value="Ω">Ohms (Ω)</option>
+      {/* Add more target unit options as needed */}
+    </select>
+    {isAdditionalParameterNeeded(currentUnit, targetUnit) && (
+      <input
+        type="number"
+        value={additionalParameter}
+        onChange={handleAdditionalParameterChange}
+        placeholder="Additional Parameter (e.g., Voltage for converting Amps to Watts)"
+      />
+    )}
+    <button onClick={convertValue}>Convert</button>
+    <div>Result: {result}</div>
+  </div>
+)}
+export default ElectricalUnitConverter 

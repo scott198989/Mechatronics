@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import InputFields from './InputFields' // Import the InputFields component
-import math from 'mathjs'
+import ElectricalUnitConverter from './ElectricalUnitConverter' // Import the converter here
 
 const ElectricalFormulas = () => {
   const [selectedFormula, setSelectedFormula] = useState('')
@@ -109,12 +109,6 @@ const calculateParallelCircuit = () => {
   return `Total Resistance (Ω) = ${formattedResistance}`;
 }
 
-
-
-
-
-
-
   const calculateOhmsLaw = () => {
     if (voltage && resistance) {
       const v = parseFloat(voltage)
@@ -166,6 +160,7 @@ const calculateParallelCircuit = () => {
         </form>
       )}
       {result && <p>Result: {result}</p>}
+      <ElectricalUnitConverter />
     </div>
   )
 }
